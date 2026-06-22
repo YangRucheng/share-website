@@ -1,0 +1,25 @@
+{
+  "name": "misaka-share",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "dompurify": "^3.2.6",
+    "@lucide/vue": "^1.21.0",
+    "marked": "^15.0.12",
+    "naive-ui": "^2.41.1",
+    "smol-toml": "^1.4.1",
+    "vue": "^3.5.17"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.4",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vue-tsc": "^2.2.10"
+  }
+}
