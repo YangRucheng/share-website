@@ -5,6 +5,13 @@ const GITHUB_DOWNLOAD_HOSTS = new Set([
   'objects.githubusercontent.com',
   'release-assets.githubusercontent.com',
 ]);
+const GITHUB_RELEASE_DOWNLOAD_PATH = /^\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/releases\/download\/[^/]+\/.+$/;
+
+const isGitHubReleaseDownloadUrl = (url: URL) => (
+  url.protocol === 'https:'
+  && url.hostname.toLowerCase() === 'github.com'
+  && GITHUB_RELEASE_DOWNLOAD_PATH.test(url.pathname)
+);
 
 export const getDownloadProxyOptions = () => (
   DOWNLOAD_PROXY_OPTIONS.map((option) => ({
@@ -21,6 +28,10 @@ export const proxifyDownloadUrl = (url: string, proxyId: DownloadProxyId) => {
 
   try {
     const parsed = new URL(url);
+    if (option.value === 'edge' && !isGitHubReleaseDownloadUrl(parsed)) {
+      return url;
+    }
+
     if (!GITHUB_DOWNLOAD_HOSTS.has(parsed.hostname)) {
       return url;
     }
@@ -28,5 +39,5 @@ export const proxifyDownloadUrl = (url: string, proxyId: DownloadProxyId) => {
     return url;
   }
 
-  return `${option.baseUrl}${url}`;
+  return `${option.baseUrl}${option.encodeUrl ? encodeURIComponent(url) : url}`;
 };
