@@ -21,16 +21,48 @@ const corsHeaders = () => {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Expose-Headers': 'Link',
   };
 };
 
 const normalizePath = (path) => {
-  if (!path || typeof path !== 'string') {
-    return '';
-  }
+  if (!path || typeof path !== 'string') return '';
 
   const trimmed = path.trim();
   return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+};
+
+const getGitHubToken = (env = {}) => {
+  const token = env.GITHUB_TOKEN;
+  return typeof token === 'string' ? token.trim() : '';
+};
+
+const sanitizeLinkHeader = (linkHeader, { acceptMode, githubPath, requestUrl }) => {
+  if (!linkHeader) return '';
+
+  const links = [];
+
+  linkHeader.split(',').forEach((part) => {
+    const match = part.match(/<([^>]+)>;\s*rel="([^"]+)"/);
+    if (!match) return;
+
+    const [, upstreamLink, rel] = match;
+    if (!['first', 'last', 'next', 'prev'].includes(rel)) return;
+
+    const upstreamLinkUrl = new URL(upstreamLink);
+    if (upstreamLinkUrl.origin !== GITHUB_API || normalizePath(upstreamLinkUrl.pathname) !== githubPath) return;
+
+    const proxiedLinkUrl = new URL('/api/github', requestUrl.origin);
+    proxiedLinkUrl.searchParams.set('path', githubPath);
+    proxiedLinkUrl.searchParams.set('accept', acceptMode);
+    upstreamLinkUrl.searchParams.forEach((value, key) => {
+      proxiedLinkUrl.searchParams.set(key, value);
+    });
+
+    links.push(`<${proxiedLinkUrl.pathname}${proxiedLinkUrl.search}>; rel="${rel}"`);
+  });
+
+  return links.join(', ');
 };
 
 export const onRequestOptions = () => {
@@ -40,12 +72,12 @@ export const onRequestOptions = () => {
   });
 };
 
-export const onRequestGet = async (context) => {
-  const requestUrl = new URL(context.request.url);
+export const onRequestGet = async ({ request, env = {} }) => {
+  const requestUrl = new URL(request.url);
   const githubPath = normalizePath(requestUrl.searchParams.get('path'));
   const acceptMode = requestUrl.searchParams.get('accept') === 'raw' ? 'raw' : 'json';
 
-  if (!ALLOWED_PATH.test(githubPath)) {
+  if (!ALLOWED_PATH.test(githubPath))
     return json(
       {
         message: 'Unsupported GitHub API path',
@@ -59,13 +91,10 @@ export const onRequestGet = async (context) => {
       },
       { status: 400, headers: corsHeaders() },
     );
-  }
 
   const upstreamUrl = new URL(githubPath, GITHUB_API);
   requestUrl.searchParams.forEach((value, key) => {
-    if (key !== 'path' && key !== 'accept') {
-      upstreamUrl.searchParams.append(key, value);
-    }
+    if (key !== 'path' && key !== 'accept') upstreamUrl.searchParams.append(key, value);
   });
 
   const headers = new Headers({
@@ -74,22 +103,16 @@ export const onRequestGet = async (context) => {
     'User-Agent': 'edgeone-pages-github-release-viewer',
   });
 
-  const token = context.env && context.env.GITHUB_TOKEN;
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`);
-  }
+  const token = getGitHubToken(env);
+  if (token) headers.set('Authorization', `Bearer ${token}`);
 
   const upstream = await fetch(upstreamUrl.toString(), { headers });
   const responseHeaders = new Headers(corsHeaders());
   responseHeaders.set('Content-Type', upstream.headers.get('Content-Type') || (acceptMode === 'raw' ? 'text/plain; charset=utf-8' : 'application/json; charset=utf-8'));
   responseHeaders.set('Cache-Control', upstream.ok ? 'public, max-age=60' : 'no-store');
 
-  for (const header of ['ETag', 'Last-Modified', 'X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset']) {
-    const value = upstream.headers.get(header);
-    if (value) {
-      responseHeaders.set(header, value);
-    }
-  }
+  const linkHeader = sanitizeLinkHeader(upstream.headers.get('Link'), { acceptMode, githubPath, requestUrl });
+  if (linkHeader) responseHeaders.set('Link', linkHeader);
 
   return new Response(await upstream.arrayBuffer(), {
     status: upstream.status,
