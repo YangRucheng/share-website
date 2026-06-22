@@ -5,14 +5,28 @@ const CACHE_MAX_AGE = 30 * 60 * 1000;
 
 export const DOWNLOAD_PROXY_OPTIONS = [
   {
+    label: 'Edge Functions 代理',
+    value: 'edge',
+    baseUrl: '/api/release-download?url=',
+    encodeUrl: true,
+  },
+  {
     label: 'ghfast.top',
     value: 'ghfast',
     baseUrl: 'https://ghfast.top/',
+    encodeUrl: false,
+  },
+  {
+    label: 'gh-proxy.com',
+    value: 'ghProxy',
+    baseUrl: 'https://gh-proxy.com/',
+    encodeUrl: false,
   },
   {
     label: '直连 GitHub',
     value: 'direct',
     baseUrl: '',
+    encodeUrl: false,
   },
 ] as const;
 
@@ -27,7 +41,7 @@ export type DownloadPreferences = {
 export const DEFAULT_DOWNLOAD_PREFERENCES: DownloadPreferences = {
   ignoreEmptyReleases: true,
   ignoreTextMarkdownAssets: true,
-  downloadProxy: 'ghfast',
+  downloadProxy: 'edge',
 };
 
 type CacheEntry<T, TSource extends string> = {
