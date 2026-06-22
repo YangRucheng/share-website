@@ -1,0 +1,45 @@
+title = "Misaka 文件下载站"
+
+[[repositories]]
+repo = "chen08209/FlClash"
+name = "FlClash"
+
+[[repositories]]
+repo = "mihomo-party-org/clash-party"
+name = "Clash Party"
+
+[[repositories]]
+repo = "LollipopKit/flutter_server_box"
+name = "ServerBox"
+
+[[repositories]]
+repo = "telegramdesktop/tdesktop"
+name = "Telegram Desktop"
+
+[[repositories]]
+repo = "anilbeesetti/NextPlayer"
+name = "Next Player"
+
+[[repositories]]
+repo = "OpenListTeam/OpenList"
+name = "OpenList"
+
+[[repositories]]
+repo = "koho/frpmgr"
+name = "Frp Client GUI"
+
+[[repositories]]
+repo = "PowerShell/PowerShell"
+name = "PowerShell"
+
+[[repositories]]
+repo = "wanghongenpin/proxypin"
+name = "ProxyPin"
+
+[[repositories]]
+repo = "maotoumao/MusicFree"
+name = "MusicFree"
+
+[[repositories]]
+repo = "xihan123/DnsSpeedTestApp"
+name = "DNSSpeedTester"
