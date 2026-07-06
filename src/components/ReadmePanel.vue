@@ -70,6 +70,27 @@ const resolveReadmeLink = (href: string) => {
   return path ? `${repositoryUrl}/blob/${branch}/${path}` : repositoryUrl;
 };
 
+const resolveImageSrc = (src: string) => {
+  const trimmed = src.trim();
+  const fullName = props.repository.full_name;
+  const branch = props.branch || props.repository.default_branch;
+
+  if (!trimmed) {
+    return null;
+  }
+
+  if (EXTERNAL_LINK.test(trimmed)) {
+    return trimmed;
+  }
+
+  if (HAS_PROTOCOL.test(trimmed)) {
+    return null;
+  }
+
+  const path = normalizeRelativePath(trimmed.replace(/^\/+/, ''));
+  return path ? `https://raw.githubusercontent.com/${fullName}/${branch}/${path}` : null;
+};
+
 const rewriteLinks = (html: string) => {
   const template = document.createElement('template');
   template.innerHTML = html;
@@ -87,6 +108,15 @@ const rewriteLinks = (html: string) => {
     link.setAttribute('href', nextHref);
     link.setAttribute('target', '_blank');
     link.setAttribute('rel', 'noreferrer noopener');
+  });
+
+  template.content.querySelectorAll('img').forEach((img) => {
+    const src = img.getAttribute('src');
+    const nextSrc = src ? resolveImageSrc(src) : null;
+
+    if (nextSrc) {
+      img.setAttribute('src', nextSrc);
+    }
   });
 
   return template.innerHTML;
