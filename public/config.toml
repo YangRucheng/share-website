@@ -21,10 +21,6 @@ repo = "anilbeesetti/NextPlayer"
 name = "Next Player"
 
 [[repositories]]
-repo = "OpenListTeam/OpenList"
-name = "OpenList"
-
-[[repositories]]
 repo = "koho/frpmgr"
 name = "Frp Client GUI"
 
@@ -43,3 +39,11 @@ name = "MusicFree"
 [[repositories]]
 repo = "xihan123/DnsSpeedTestApp"
 name = "DNSSpeedTester"
+
+[[repositories]]
+repo = "zhongbai2333/Tomato-Novel-Downloader"
+name = "番茄小说下载器"
+
+[[repositories]]
+repo = "CherryHQ/cherry-studio"
+name = "Cherry Studio"
