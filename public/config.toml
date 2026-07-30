@@ -47,3 +47,7 @@ name = "番茄小说下载器"
 [[repositories]]
 repo = "CherryHQ/cherry-studio"
 name = "Cherry Studio"
+
+[[repositories]]
+repo = "farion1231/cc-switch"
+name = "CC Switch"
