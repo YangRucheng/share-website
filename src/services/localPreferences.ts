@@ -1,3 +1,5 @@
+import type { PlatformId } from './platformDetect';
+
 const TOKEN_KEY = 'misaka-downloads.github-token';
 const PREFERENCES_KEY = 'misaka-downloads.preferences';
 const CACHE_PREFIX = 'misaka-downloads.github-cache:';
@@ -32,16 +34,20 @@ export const DOWNLOAD_PROXY_OPTIONS = [
 
 export type DownloadProxyId = typeof DOWNLOAD_PROXY_OPTIONS[number]['value'];
 
+export type PlatformPreference = 'auto' | Exclude<PlatformId, 'unknown'>;
+
 export type DownloadPreferences = {
   ignoreEmptyReleases: boolean;
   ignoreTextMarkdownAssets: boolean;
   downloadProxy: DownloadProxyId;
+  platform: PlatformPreference;
 };
 
 export const DEFAULT_DOWNLOAD_PREFERENCES: DownloadPreferences = {
   ignoreEmptyReleases: true,
   ignoreTextMarkdownAssets: true,
   downloadProxy: 'edge',
+  platform: 'auto',
 };
 
 type CacheEntry<T, TSource extends string> = {
@@ -66,10 +72,19 @@ const normalizeDownloadProxy = (value: unknown): DownloadProxyId => (
     : DEFAULT_DOWNLOAD_PREFERENCES.downloadProxy
 );
 
+const PLATFORM_PREFERENCE_VALUES: readonly PlatformPreference[] = ['auto', 'windows', 'macos', 'linux', 'android', 'ios'];
+
+const normalizePlatform = (value: unknown): PlatformPreference => (
+  PLATFORM_PREFERENCE_VALUES.includes(value as PlatformPreference)
+    ? value as PlatformPreference
+    : DEFAULT_DOWNLOAD_PREFERENCES.platform
+);
+
 export const normalizeDownloadPreferences = (preferences: Partial<DownloadPreferences>): DownloadPreferences => ({
   ignoreEmptyReleases: preferences.ignoreEmptyReleases ?? DEFAULT_DOWNLOAD_PREFERENCES.ignoreEmptyReleases,
   ignoreTextMarkdownAssets: preferences.ignoreTextMarkdownAssets ?? DEFAULT_DOWNLOAD_PREFERENCES.ignoreTextMarkdownAssets,
   downloadProxy: normalizeDownloadProxy(preferences.downloadProxy),
+  platform: normalizePlatform(preferences.platform),
 });
 
 export const getGitHubToken = () => normalizeToken(getStorage()?.getItem(TOKEN_KEY) || '');
