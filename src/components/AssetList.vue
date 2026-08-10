@@ -4,6 +4,8 @@ import { NIcon, NTag } from 'naive-ui';
 import { Download, FileArchive, HardDrive } from '@lucide/vue';
 import { getVisibleAssets } from '../services/assetFilters';
 import { proxifyDownloadUrl } from '../services/downloadProxy';
+import { detectPlatform } from '../services/platformDetect';
+import { isRecommendedAsset, sortAssetsByRecommendation } from '../services/platformAssets';
 import type { DownloadPreferences } from '../services/localPreferences';
 import type { GitHubAsset } from '../types/github';
 
@@ -23,10 +25,18 @@ const formatBytes = (value: number) => {
   return `${size.toFixed(size >= 10 || index === 0 ? 0 : 1)} ${units[index]}`;
 };
 
-const sortedAssets = computed(() => (
-  getVisibleAssets(props.assets, props.preferences.ignoreTextMarkdownAssets)
-    .sort((a, b) => a.name.localeCompare(b.name))
+const effectivePlatform = computed(() => (
+  props.preferences.platform === 'auto' ? detectPlatform() : props.preferences.platform
 ));
+
+const sortedAssets = computed(() => (
+  sortAssetsByRecommendation(
+    getVisibleAssets(props.assets, props.preferences.ignoreTextMarkdownAssets),
+    effectivePlatform.value,
+  )
+));
+
+const isRecommended = (asset: GitHubAsset) => isRecommendedAsset(asset, effectivePlatform.value);
 
 const getDownloadUrl = (url: string) => proxifyDownloadUrl(url, props.preferences.downloadProxy);
 </script>
@@ -52,9 +62,14 @@ const getDownloadUrl = (url: string) => proxifyDownloadUrl(url, props.preference
           <span>{{ asset.download_count.toLocaleString() }} 次下载</span>
         </span>
       </span>
-      <NTag v-if="asset.state !== 'uploaded'" size="small" type="warning">
-        {{ asset.state }}
-      </NTag>
+      <span class="asset-tags">
+        <NTag v-if="asset.state !== 'uploaded'" size="small" type="warning">
+          {{ asset.state }}
+        </NTag>
+        <NTag v-if="isRecommended(asset)" size="small" type="success">
+          推荐
+        </NTag>
+      </span>
       <span class="asset-download" aria-hidden="true">
         <NIcon :component="Download" />
         <span>下载</span>

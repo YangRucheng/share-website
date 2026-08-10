@@ -21,6 +21,7 @@ import {
 import { ArrowLeft, KeyRound, Save, Settings, Trash2 } from '@lucide/vue';
 import { loadConfig } from './services/config';
 import { getDownloadProxyOptions } from './services/downloadProxy';
+import { getPlatformOptions } from './services/platformDetect';
 import { getRepositoryKey, loadReleasePage, loadRepositoryBundle, loadRepositorySummary } from './services/githubClient';
 import {
   clearGitHubToken,
@@ -49,6 +50,7 @@ const preferencesDraft = ref<DownloadPreferences>({ ...initialPreferences });
 const storedPreferences = ref<DownloadPreferences>({ ...initialPreferences });
 const selectedKey = ref<string | null>(null);
 const downloadProxyOptions = getDownloadProxyOptions();
+const platformOptions = getPlatformOptions();
 
 const theme = computed(() => dark.value ? darkTheme : lightTheme);
 const hasToken = computed(() => Boolean(storedToken.value));
@@ -150,6 +152,7 @@ const samePreferences = (first: DownloadPreferences, second: DownloadPreferences
   first.ignoreEmptyReleases === second.ignoreEmptyReleases
   && first.ignoreTextMarkdownAssets === second.ignoreTextMarkdownAssets
   && first.downloadProxy === second.downloadProxy
+  && first.platform === second.platform
 );
 
 const selectProject = (key: string) => {
@@ -317,6 +320,10 @@ watchEffect(() => {
 
             <NFormItem label="GitHub 下载链接代理" class="settings-field">
               <NSelect v-model:value="preferencesDraft.downloadProxy" :options="downloadProxyOptions" />
+            </NFormItem>
+
+            <NFormItem label="推荐安装包平台" class="settings-field">
+              <NSelect v-model:value="preferencesDraft.platform" :options="platformOptions" />
             </NFormItem>
 
             <div class="settings-checks">

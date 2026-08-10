@@ -460,6 +460,13 @@ a:hover {
   transform: translateY(-1px);
 }
 
+.asset-tags {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .asset-icon {
   display: grid;
   width: 34px;
@@ -680,7 +687,7 @@ a:hover {
     grid-template-columns: 34px minmax(0, 1fr);
   }
 
-  .asset-item > .n-tag,
+  .asset-item .asset-tags,
   .asset-download {
     grid-column: 2;
     justify-self: start;
