@@ -51,3 +51,7 @@ name = "Cherry Studio"
 [[repositories]]
 repo = "farion1231/cc-switch"
 name = "CC Switch"
+
+[[repositories]]
+repo = "ventoy/Ventoy"
+name = "Ventoy"
